@@ -1,0 +1,10 @@
+
+.vs/
+external/
+Debug/
+Release/
+World/Debug/
+World/Release/
+World/*.vcxproj
+World/*.vcxproj.filters
+World/*.vcxproj.user
