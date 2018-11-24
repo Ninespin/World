@@ -134,14 +134,15 @@ int Window::init()
 		std::cout << "x:" << p1->getX() << " y:" << p1->getY() << " z:" << p1->getZ() << std::endl;
 	}
 
-	EntityFilter ef;
-	std::cout << std::boolalpha << "entity 1 has Tcomponent and color: " << ef.hasAllComponents<TransformComponent, ColorComponent>(*e1.get()) << std::endl;
+	EntityFilter<TransformComponent> ef;
+	EntityFilter<ColorComponent> efT;
+	std::cout << std::boolalpha << "entity 1 has Tcomponent: " << ef.hasAllComponents(*e1.get()) << std::endl;
 
-	std::cout << std::boolalpha << "entity 2 has Tcomponent and color: " << ef.hasAllComponents<TransformComponent, ColorComponent>(*e2.get()) << std::endl;
-	std::cout << std::boolalpha << "entity 3 has Tcomponent: " << ef.hasAllComponents<TransformComponent>(*e4.get()) << std::endl;
+	std::cout << std::boolalpha << "entity 2 has Tcomponent: " << ef.hasAllComponents(*e2.get()) << std::endl;
+	std::cout << std::boolalpha << "entity 3 has color: " << efT.hasAllComponents(*e4.get()) << std::endl;
 
-	auto allTransformed = ef.filterByComponents<TransformComponent>(s1->getEntities());
-	auto allColored = ef.filterByComponents<ColorComponent>(s1->getEntities());
+	auto allTransformed = ef.filterByComponents(s1->getEntities());
+	auto allColored = efT.filterByComponents(s1->getEntities());
 
 	std::cout << "all entities with TransformComponent:" << std::endl;
 	for(auto& e: *allTransformed.get())
