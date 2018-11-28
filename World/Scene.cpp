@@ -13,6 +13,13 @@ Scene::Scene(const char* name)
 Scene::~Scene()
 {
 	std::cout << "destroyed scene: " << m_name << std::endl;
+	try
+	{
+		stop();
+	}catch(...)
+	{
+		std::cout << "Failed to stop all systems for scene: " << m_name << std::endl;
+	}
 }
 
 std::string Scene::getName() const
@@ -91,4 +98,36 @@ SceneCRUD::Object_t Scene::getEntityByName(std::string name) const
 size_t Scene::getNumScenes() const
 {
 	return m_entities.size();
+}
+
+void Scene::addSystem(std::shared_ptr<System> system)
+{
+	if (system) {
+		m_systems.push_back(std::shared_ptr<System>(system));
+		system->setBoundScene(this->getEntities());
+	}
+}
+
+void Scene::start()
+{
+	for(std::vector<std::shared_ptr<System>>::iterator it = m_systems.begin(); it != m_systems.end(); ++it)
+	{
+		(*it)->start();
+	}
+}
+
+void Scene::update()
+{
+	for (auto& system : m_systems)
+	{
+		system->update();
+	}
+}
+
+void Scene::stop()
+{
+	for (auto& system : m_systems)
+	{
+		system->stop();
+	}
 }

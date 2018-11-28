@@ -3,8 +3,9 @@
 
 #include "EntityFilter.h"
 
-template<class... TComponents> class Job
+class IJob
 {
+
 public:
 	enum class JOB_STATE
 	{
@@ -17,29 +18,24 @@ public:
 		STOPPING  // running but stopping
 	};
 
+protected:
+	IJob(const char* name)
+		: m_name(name)
+		, m_state(JOB_STATE::STOPPED){}
+
 public:
-	Job(const char* name)
-		: m_state(JOB_STATE::STOPPED)
-		, m_name(name)
-	{
-	}
-
-	virtual ~Job()
-	{
-	}
-
-
 	/**
-	 * \brief Starts the job process cleanly. if the onStarting method fails, will set the state to ERROR and attempt to stop
-	 * \return Execution success
-	 */
+	* \brief Starts the job process cleanly. if the onStarting method fails, will set the state to ERROR and attempt to stop
+	* \return Execution success
+	*/
 	bool start()
 	{
 		setState(JOB_STATE::STARTING);
-		if(onStarting())
+		if (onStarting())
 		{
 			setState(JOB_STATE::RUNNING);
-		}else
+		}
+		else
 		{
 			setState(JOB_STATE::ERROR);
 			return stop();
@@ -48,9 +44,9 @@ public:
 	}
 
 	/**
-	 * \brief Stop the job process cleanly
-	 * \return Execution success
-	 */
+	* \brief Stop the job process cleanly
+	* \return Execution success
+	*/
 	bool stop()
 	{
 		JOB_STATE initialState = m_state;
@@ -65,23 +61,24 @@ public:
 	}
 
 	/**
-	 * \brief Update method: do what the job has to do per iteration
-	 * \return Execution success
-	 */
+	* \brief Update method: do what the job has to do per iteration
+	* \return Execution success
+	*/
 	bool update()
 	{
-		if(JOB_STATE::RUNNING == m_state)
+		if (JOB_STATE::RUNNING == m_state)
 		{
 			try
 			{
 				onUpdate();
-			}catch(...)
+			}
+			catch (...)
 			{
 				setState(JOB_STATE::ERROR);
 			}
 
 		}
-		
+
 		if (JOB_STATE::ERROR == m_state || JOB_STATE::STOPPING == m_state)
 		{
 			stop();
@@ -91,18 +88,18 @@ public:
 	}
 
 	/**
-	 * \brief Gets the current state of the Job
-	 * \return The current state of the Job
-	 */
+	* \brief Gets the current state of the Job
+	* \return The current state of the Job
+	*/
 	JOB_STATE getState()const
 	{
 		return m_state;
 	}
 
 	/**
-	 * \brief Gets the Job's name
-	 * \return The Job's name
-	 */
+	* \brief Gets the Job's name
+	* \return The Job's name
+	*/
 	std::string getName()const
 	{
 		return m_name;
@@ -112,36 +109,32 @@ public:
 	* \brief Clears then re-builds the entity list that the job uses
 	* \param allEntities All entities from which to filter entities
 	*/
-	virtual void rebuildEntityTargetList(EntityList_t& allEntities)
-	{
-		m_targetEntities.clear();
-		m_targetEntities = m_entityFilter.filterByComponent(allEntities);
-	}
+	virtual void rebuildEntityTargetList(EntityList_t& allEntities) = 0;
 
 protected:
-	
+
 	/**
-	 * \brief Start event: initialization & setup code
-	 * \return Success state
-	 */
+	* \brief Start event: initialization & setup code
+	* \return Success state
+	*/
 	virtual bool onStarting() = 0;
-	
+
 	/**
-	 * \brief Stop event: cleanup code
-	 * \return Success state
-	 */
+	* \brief Stop event: cleanup code
+	* \return Success state
+	*/
 	virtual bool onStopping() = 0;
 
 	/**
-	 * \brief Update event: called every iteration if the job is running
-	 * \return  Success state
-	 */
+	* \brief Update event: called every iteration if the job is running
+	* \return  Success state
+	*/
 	virtual bool onUpdate() = 0;
 
 	/**
-	 * \brief Sets the state of this job
-	 * \param state The new state to set
-	 */
+	* \brief Sets the state of this job
+	* \param state The new state to set
+	*/
 	void setState(JOB_STATE state)
 	{
 		m_state = state;
@@ -149,9 +142,37 @@ protected:
 
 protected:
 	std::string m_name;
-	EntityFilter<TComponents> m_entityFilter;
 	JOB_STATE m_state;
-	EntityList_t m_targetEntities;
+	std::shared_ptr<EntityList_t> m_targetEntities;
+
+};
+
+template<typename Tt, class... TComponents> class Job: public IJob
+{
+
+public:
+	Job(const char* name)
+		: IJob(name)
+		, m_entityFilter()
+	{
+	}
+
+	virtual ~Job()
+	{
+	}
+
+	void rebuildEntityTargetList(EntityList_t& allEntities) override
+	{
+		if (m_targetEntities) {
+			m_targetEntities->clear();
+		}
+		m_targetEntities = m_entityFilter.filterByComponents(allEntities);
+		
+	}
+
+
+protected:
+	EntityFilter<Tt, TComponents...> m_entityFilter;
 
 };
 

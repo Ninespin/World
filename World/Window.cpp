@@ -1,11 +1,6 @@
 #include "Window.h"
 #include <exception>
 
-#include "Entity.h"
-#include "TransformComponent.h"
-#include "ColorComponent.h"
-#include "EntityFilter.h"
-
 #include <iostream>
 
 // GENERAL TODO:
@@ -71,7 +66,6 @@ Window::~Window()
 	if (m_window) {
 		glfwDestroyWindow(m_window);
 	}
-	delete m_sceneManager;
 }
 
 int Window::init()
@@ -93,77 +87,15 @@ int Window::init()
 		std::throw_with_nested(std::exception(std::string("FATAL: Failed to initialize glew").c_str(), -2));
 	}
 
-	m_sceneManager = new SceneManager();
-
-	// TESTS 
-	// Scenes
-	std::shared_ptr<Scene> s1( new Scene("scene1") );
-	std::shared_ptr<Scene> s2( new Scene("scene2") );
-	std::shared_ptr<Scene> s3( new Scene("scene3") );
-	std::shared_ptr<Scene> s4( new Scene("scene4") );
-	m_sceneManager->addScene(s1);
-	m_sceneManager->addScene(s2);
-	m_sceneManager->addScene(s3);
-	m_sceneManager->addScene(s4);
-
-	// Entities
-	std::shared_ptr<Entity> e1( new Entity("entity1") );
-	std::shared_ptr<Entity> e2( new Entity("entity2") );
-	std::shared_ptr<Entity> e3( new Entity("entity3") );
-	std::shared_ptr<Entity> e4( new Entity("entity4") );
-	s1->addEntity(e1).addEntity(e2).addEntity(e4);
-	s4->addEntity(e4).addEntity(e2);
-	s3->addEntity(e3);
-
-	// Components
-	std::shared_ptr<TransformComponent> c2(new TransformComponent() );
-	std::shared_ptr<ColorComponent> c3( new ColorComponent(8) );
-	std::shared_ptr<TransformComponent> c4(new TransformComponent());
-		
-	std::cout << "x:" << c2->getX() << " y:" << c2->getY() << " z:" << c2->getZ() << std::endl;
-	c2->setPosition(-50,10,12);
-	std::cout << "x:" << c2->getX() << " y:" << c2->getY() << " z:" << c2->getZ() << std::endl;
-
-	e1->addComponent(c2).addComponent(c3);
-	e2->addComponent(c2).addComponent(c3);
-	e4->addComponent(c4);
-
-	TransformComponent* p1;
-	if(s1->getEntityAt(0)->getComponent<TransformComponent>(p1))
-	{
-		std::cout << "x:" << p1->getX() << " y:" << p1->getY() << " z:" << p1->getZ() << std::endl;
-	}
-
-	EntityFilter<TransformComponent> ef;
-	EntityFilter<ColorComponent> efT;
-	std::cout << std::boolalpha << "entity 1 has Tcomponent: " << ef.hasAllComponents(*e1.get()) << std::endl;
-
-	std::cout << std::boolalpha << "entity 2 has Tcomponent: " << ef.hasAllComponents(*e2.get()) << std::endl;
-	std::cout << std::boolalpha << "entity 3 has color: " << efT.hasAllComponents(*e4.get()) << std::endl;
-
-	auto allTransformed = ef.filterByComponents(s1->getEntities());
-	auto allColored = efT.filterByComponents(s1->getEntities());
-
-	std::cout << "all entities with TransformComponent:" << std::endl;
-	for(auto& e: *allTransformed.get())
-	{
-		std::cout << "  " << e.get()->getName() << std::endl;
-	}
-
-	std::cout << "all entities with ColorComponent:" << std::endl;
-	for (auto& e : *allColored.get())
-	{
-		std::cout << "  " << e.get()->getName() << std::endl;
-	}
-
-
-	m_sceneManager->removeScene(2);
-
-	// END TESTS
+	m_sceneManager = std::shared_ptr<SceneManager>(new SceneManager());
 
 	return 0;
 }
 
+std::shared_ptr<SceneManager> Window::getSceneManager()const
+{
+	return m_sceneManager;
+}
 
 void Window::run()
 {
@@ -171,13 +103,17 @@ void Window::run()
 		try {
 			glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
 
+			start();
+
 			do {
 				tick();
 
 			} while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window));
+			
+			stop();
 		}
 		catch (...) {
-
+			stop();
 			std::throw_with_nested("Exception during Window::run");
 		}
 	}
@@ -186,10 +122,33 @@ void Window::run()
 
 void Window::tick()
 {
+
 	glClear(GL_COLOR_BUFFER_BIT);
 
-
+	m_sceneManager->getCurrentScene()->update();
 
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();
+}
+
+void Window::start()
+{
+	try {
+		m_sceneManager->setCurrentScene(0);
+		m_sceneManager->getCurrentScene()->start();
+	}catch(std::exception& e)
+	{
+		std::throw_with_nested(e);
+	}
+}
+
+void Window::stop()
+{
+	try {
+		m_sceneManager->getCurrentScene()->stop();
+	}
+	catch (std::exception& e)
+	{
+		std::throw_with_nested(e);
+	}
 }

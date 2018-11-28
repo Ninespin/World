@@ -17,10 +17,13 @@ public:
 	Window(const std::string& title, int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT, GLFWmonitor* monitor = nullptr, GLFWwindow* shareWindow = nullptr);
 	~Window();
 	void run();
+	std::shared_ptr<SceneManager> getSceneManager()const;
 
 private:
 	int init();
 	void tick();
+	void start();
+	void stop();
 
 private:
 	GLFWwindow* m_window;
@@ -30,7 +33,7 @@ private:
 	GLFWmonitor* m_monitor;
 	GLFWwindow* m_shareWindow;
 
-	SceneManager* m_sceneManager;
+	std::shared_ptr<SceneManager> m_sceneManager;
 };
 
 #endif

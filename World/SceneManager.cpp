@@ -21,9 +21,11 @@ SceneManagerCRUD::Object_t SceneManager::getCurrentScene() const
 void SceneManager::setCurrentScene(SceneManagerCRUD::Index_t index)
 {
 	try {
-		if (!m_sceneManagerCRUD.read(index, m_currentScene)) {
-			throw;
+		if (m_currentScene) {
+			m_currentScene->stop();
 		}
+		m_sceneManagerCRUD.read(index, m_currentScene);
+		
 	}
 	catch (...) {
 		std::throw_with_nested(std::string("No scene at index "+index));

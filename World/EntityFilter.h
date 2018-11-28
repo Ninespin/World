@@ -10,7 +10,7 @@ typedef std::vector<std::shared_ptr<Entity>> EntityList_t;
  * \brief Filters entities based on certain characteristics (i.e. by Components).  Filters are used by services.
  * \tparam TComponents The component classes to check
  */
-template <class... TComponents> class EntityFilter
+template <typename Tt, typename... TComponents> class EntityFilter
 {
 public:
 
@@ -23,7 +23,7 @@ public:
 	{
 		bool successState = true;
 
-		for(auto found: { entity.hasComponent<TComponents>()... })
+		for(auto found: { entity.hasComponent<Tt>(), entity.hasComponent<TComponents>()... })
 		{
 			successState &= found;
 		}
@@ -50,6 +50,7 @@ public:
 			});
 		return result;
 	}
+
 	
 };
 
