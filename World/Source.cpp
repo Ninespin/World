@@ -9,10 +9,17 @@
 #include "ColorComponent.h"
 #include "EntityFilter.h"
 #include "SimplePrintSystem.h"
+#include "ShaderManager.h"
 
+#include "DrawSystem.h"
+#include "MeshComponent.h"
 
 #define WORLD_VERSION_MAJOR 0
 #define WORLD_VERSION_MINOR 0
+
+// TODO: Fucking doc...
+// TODO: Mesh loader
+// TODO: Thread manager (threadpool)
 
 void printException(const std::exception& e, int level = 0) {
 	if (level == 0) {
@@ -53,17 +60,19 @@ void createScene(Window& window)
 	const std::shared_ptr<TransformComponent>	c3(new TransformComponent());
 	const std::shared_ptr<ColorComponent>		c4(new ColorComponent(8));
 	const std::shared_ptr<ColorComponent>		c5(new ColorComponent(255));
+	const std::shared_ptr<MeshComponent>		mc1(new MeshComponent());
 	c1->setPosition(-50, 10, 12);
 	c2->setPosition(80, 1540, -1);
 	c3->setPosition(-5000430, -40, 78);
-	e1->addComponent(c2).addComponent(c4);
+	e1->addComponent(c2).addComponent(c4).addComponent(mc1);
 	e2->addComponent(c3).addComponent(c4);
 	e3->addComponent(c5);
 	e4->addComponent(c1);
 
 	// Systems
 	const std::shared_ptr<SimplePrintSystem> sps(new SimplePrintSystem());
-	s1->addSystem(sps);
+	const std::shared_ptr<DrawSystem> ds(new DrawSystem());
+	s1->addSystem(ds);
 
 
 }
@@ -143,6 +152,8 @@ void createScenesTests(Window& window)
 
 int main(int argc, char** argv) {
 
+	ShaderManager* sm = ShaderManager::instance();
+
 	try {
 		if (!glfwInit()) {
 			throw std::exception("FATAL: Failed to initialize GLFW, terminating.");
@@ -151,7 +162,12 @@ int main(int argc, char** argv) {
 		std::stringstream title;
 		title << "World v" << WORLD_VERSION_MAJOR << "." << WORLD_VERSION_MINOR;
 
+
 		Window w = Window(title.str());
+
+		sm->loadProgram("default");
+		sm->bindProgram("default");
+
 		createScene(w);
 
 		w.run();
@@ -162,6 +178,8 @@ int main(int argc, char** argv) {
 	}
 
 	std::cout << "Shutting down..." << std::endl;
+
+	ShaderManager::destroy();
 	glfwTerminate();
 
 	return 0;

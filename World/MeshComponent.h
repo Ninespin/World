@@ -2,29 +2,56 @@
 #define MESH_COMPONENT_H
 
 #include "Component.h"
-#include <vector>
+#include "Vertex.h"
 #include "GL/glew.h"
+
+#include <vector>
 
 // TODO: Create Vector classes (Vector2<>, Vector3<>, Vector4<>)
 // TODO: Create typedefs for Vectors: e.g. Vector2f -> Vector2<float>
 
+
+
 class MeshComponent: public Component
 {
+public:
+	//
+	//  Used by draw system and mesh loading system
+	//	Represents available features of a mesh
+	//
+	enum MESH_FEATURES {
+		VERTEX = 0x01, // if not present cant render...
+		NORMALS = 0x01 << 2,
+		COLOR = 0x01 << 3,
+		COLOR_SECONDARY = 0x01 << 4,
+		FOG_COORD = 0x01 << 5,
+		UV0 = 0x01 << 6,
+		UV1 = 0x01 << 7,
+		UV2 = 0x01 << 8,
+		UV3 = 0x01 << 9,
+		UV4 = 0x01 << 10,
+		UV5 = 0x01 << 11,
+		UV6 = 0x01 << 12,
+		UV7 = 0x01 << 13,
+		TANGENTS = 0x01 << 14,
+		BITANGENTS = 0x01 << 15,
+
+	};
 
 public:
 	MeshComponent();
 	virtual ~MeshComponent();
+	void buildVertexBuffer();
+	GLuint getVAO()const;
+	unsigned int getNumberVertex()const;
+	MESH_FEATURES getFeatures()const;
+	
 
 protected:
-	std::vector<float> m_vertex;
-	std::vector<float> m_normals;
-	std::vector<float> m_colors;
-	std::vector<float> m_uv;
+	MESH_FEATURES m_features; // bit mask representing available mesh features
+	std::vector<Vertex> m_vertex;
 	GLuint m_mainBuffer; // VAO / IBO
-	GLuint m_vertexBuffer;
-	GLuint m_normalBuffer;
-	GLuint m_colorBuffer;
-	GLuint m_uvBuffer;
+	GLuint m_packedBuffer;
 
 };
 
