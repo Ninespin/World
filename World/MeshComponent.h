@@ -7,10 +7,6 @@
 
 #include <vector>
 
-// TODO: Create Vector classes (Vector2<>, Vector3<>, Vector4<>)
-// TODO: Create typedefs for Vectors: e.g. Vector2f -> Vector2<float>
-
-
 
 class MeshComponent: public Component
 {

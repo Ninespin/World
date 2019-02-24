@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "UserInputGLFWKeyboardComponent.h"
+
 // GENERAL TODO:
 //	- Create Job class
 //		* Processes Component data
@@ -64,6 +66,7 @@ Window::Window(const std::string & title, int width, int height, GLFWmonitor * m
 Window::~Window()
 {
 	if (m_window) {
+		UserInputKeyboardComponent::destroyInstance();
 		glfwDestroyWindow(m_window);
 	}
 }
@@ -79,6 +82,8 @@ int Window::init()
 	if (nullptr == m_window) {
 		std::throw_with_nested(std::exception(std::string("FATAL: Failed to create window \"" + m_title + "\"").c_str(), -1));
 	}
+
+	UserInputKeyboardComponent::instance()->hookWindow(m_window);
 
 	glfwMakeContextCurrent(m_window);
 	glewExperimental = true;
@@ -122,7 +127,6 @@ void Window::run()
 
 void Window::tick()
 {
-
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	m_sceneManager->getCurrentScene()->update();

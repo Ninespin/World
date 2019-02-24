@@ -1,7 +1,9 @@
 #include "DrawJob.h"
 #include "GL/glew.h"
 
-//#include <iostream>
+#include "UserInputGLFWKeyboardComponent.h"
+
+#include <iostream>
 
 DrawJob::DrawJob()
 	: Job("DrawJob")
@@ -35,6 +37,11 @@ bool DrawJob::onUpdate()
 
 		entity->getComponent(tcomponent);
 		entity->getComponent(mcomponent);
+
+		if(UserInputKeyboardComponent::instance()->getInputValue(GLFW_KEY_E) == GLFW_PRESS)
+		{
+			std::cout << "E!" << std::endl;
+		}
 
 		if (tcomponent && mcomponent)
 		{
